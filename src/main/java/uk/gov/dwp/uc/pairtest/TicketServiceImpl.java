@@ -1,7 +1,9 @@
 package uk.gov.dwp.uc.pairtest;
 
 import thirdparty.paymentgateway.TicketPaymentService;
+import thirdparty.paymentgateway.TicketPaymentServiceImpl;
 import thirdparty.seatbooking.SeatReservationService;
+import thirdparty.seatbooking.SeatReservationServiceImpl;
 import uk.gov.dwp.uc.pairtest.domain.TicketTypeRequest;
 import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
 
@@ -18,8 +20,12 @@ public class TicketServiceImpl implements TicketService{
     @Override
     public void purchaseTickets(Long accountId, TicketTypeRequest... ticketTypeRequests) throws InvalidPurchaseException {
 //        Validate Account ID
-        if (accountId <= 0 || accountId == null) {
+        if (accountId == null || accountId <= 0) {
             throw new InvalidPurchaseException("Invalid account ID");
+        }
+
+        if (ticketTypeRequests == null || ticketTypeRequests.length == 0) {
+            throw new InvalidPurchaseException("At least one ticket type must be specified.");
         }
 
         // Validate ticket requests
@@ -46,14 +52,13 @@ public class TicketServiceImpl implements TicketService{
                     break;
             }
         }
-
         // Validate total tickets
-        if (totalTickets > MAX_TICKETS) {
-            throw new InvalidPurchaseException("Cannot purchase more than 25 tickets at a time.");
+        if (totalTickets <= 0 || totalTickets > MAX_TICKETS) {
+            throw new InvalidPurchaseException(totalTickets <=0 ? "Atleast one ticket must be purchased" : "Cannot purchase more than 25 tickets at a time.");
         }
 
         // Validate presence of Adult ticket
-        if (!hasAdultTicket && (totalSeats > 0)) {
+        if (!hasAdultTicket) {
             throw new InvalidPurchaseException("Child and Infant tickets cannot be purchased without an Adult ticket.");
         }
 
@@ -63,4 +68,17 @@ public class TicketServiceImpl implements TicketService{
         // Reserve seats
         reservationService.reserveSeat(accountId, totalSeats);
     }
+
+//    public static void main(String[] args) {
+//        TicketPaymentService paymentService = new TicketPaymentServiceImpl();
+//        SeatReservationService reservationService = new SeatReservationServiceImpl();
+//
+//        TicketService ticketService = new TicketServiceImpl(paymentService, reservationService);
+//
+//        TicketTypeRequest ticketRequestInfant = new TicketTypeRequest(TicketTypeRequest.TicketType.INFANT, 3);
+//        TicketTypeRequest ticketRequestAdult = new TicketTypeRequest(TicketTypeRequest.TicketType.ADULT, 20);
+//        TicketTypeRequest ticketRequestChild = new TicketTypeRequest(TicketTypeRequest.TicketType.CHILD, 3);
+//
+//        ticketService.purchaseTickets(null, null);
+//    }
 }
