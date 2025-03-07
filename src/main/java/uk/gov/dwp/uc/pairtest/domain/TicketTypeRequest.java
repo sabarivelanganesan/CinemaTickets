@@ -19,7 +19,17 @@ public class TicketTypeRequest {
     }
 
     public enum TicketType {
-        ADULT, CHILD , INFANT
+        INFANT(0),   // Infant tickets are free
+        CHILD(15),   // Child tickets cost £15
+        ADULT(25);   // Adult tickets cost £25
+
+        private final int price;
+        TicketType(int price) {
+            this.price = price;
+        }
+        public int getPrice() {
+            return price;
+        }
     }
 
 }
